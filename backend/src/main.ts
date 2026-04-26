@@ -1,0 +1,40 @@
+import 'dotenv/config';
+import { NestFactory, HttpAdapterHost } from '@nestjs/core';
+import { ValidationPipe, BadRequestException } from '@nestjs/common';
+import { AppModule } from './app.module.js';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
+import { ValidationExceptionFilter } from './common/filters/validation-exception.filter.js';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Global validation pipe with custom error formatter
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      exceptionFactory: (errors) => {
+        const formattedErrors = errors.map((error) => ({
+          field: error.property,
+          message: Object.values(error.constraints || {}).join(', '),
+        }));
+        return new BadRequestException({
+          message: formattedErrors,
+          error: 'Validation failed',
+        });
+      },
+    }),
+  );
+
+  // Global exception filter
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalFilters(new ValidationExceptionFilter());
+
+  await app.listen(process.env.PORT ?? 3000);
+}
+bootstrap();
