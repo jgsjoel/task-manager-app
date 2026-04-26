@@ -8,7 +8,7 @@ import { ValidationExceptionFilter } from './common/filters/validation-exception
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Global validation pipe with custom error formatter
+  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -16,16 +16,6 @@ async function bootstrap() {
       transform: true,
       transformOptions: {
         enableImplicitConversion: true,
-      },
-      exceptionFactory: (errors) => {
-        const formattedErrors = errors.map((error) => ({
-          field: error.property,
-          message: Object.values(error.constraints || {}).join(', '),
-        }));
-        return new BadRequestException({
-          message: formattedErrors,
-          error: 'Validation failed',
-        });
       },
     }),
   );

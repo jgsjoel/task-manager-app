@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
@@ -25,12 +25,16 @@ let AuthController = class AuthController {
     async login(loginDto) {
         return this.authService.login(loginDto);
     }
-    async refresh(refreshToken) {
-        return this.authService.refresh(refreshToken);
+    async refresh(body) {
+        if (!body.refreshToken) {
+            throw new BadRequestException('Refresh token is required');
+        }
+        return this.authService.refresh(body.refreshToken);
     }
 };
 __decorate([
     Post('register'),
+    HttpCode(201),
     __param(0, Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [RegisterDto]),
@@ -45,9 +49,9 @@ __decorate([
 ], AuthController.prototype, "login", null);
 __decorate([
     Post('refresh'),
-    __param(0, Body('refreshToken')),
+    __param(0, Body()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "refresh", null);
 AuthController = __decorate([

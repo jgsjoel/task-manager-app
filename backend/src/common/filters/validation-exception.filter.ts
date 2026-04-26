@@ -18,17 +18,37 @@ export class ValidationExceptionFilter implements ExceptionFilter {
 
     const validationErrors: { field: string; message: string }[] = [];
 
-    if (
-      typeof exceptionResponse === 'object' &&
-      'message' in exceptionResponse &&
-      Array.isArray(exceptionResponse.message)
-    ) {
-      validationErrors.push(
-        ...exceptionResponse.message.map((error: any) => ({
-          field: error.property,
-          message: Object.values(error.constraints || {}).join(', '),
-        })),
-      );
+    if (typeof exceptionResponse === 'object' && 'message' in exceptionResponse) {
+      const messages = exceptionResponse.message;
+
+      // Handle if message is a string
+      if (typeof messages === 'string') {
+        response.status(status).json({
+          statusCode: status,
+          message: messages,
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
+      // Handle if message is an array of validation errors
+      if (Array.isArray(messages)) {
+        messages.forEach((error: any) => {
+          if (error.property && error.constraints) {
+            // Standard ValidationError from class-validator
+            validationErrors.push({
+              field: error.property,
+              message: Object.values(error.constraints).join(', '),
+            });
+          } else if (typeof error === 'string') {
+            // String error message
+            validationErrors.push({
+              field: 'general',
+              message: error,
+            });
+          }
+        });
+      }
     }
 
     response.status(status).json({

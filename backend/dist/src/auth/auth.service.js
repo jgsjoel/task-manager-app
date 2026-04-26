@@ -7,77 +7,99 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+var AuthService_1;
+import { Injectable, BadRequestException, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import * as bcrypt from 'bcrypt';
-let AuthService = class AuthService {
+let AuthService = AuthService_1 = class AuthService {
     prisma;
     jwtService;
+    logger = new Logger(AuthService_1.name);
     constructor(prisma, jwtService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
     }
     async register(registerDto) {
-        const { email, password, name } = registerDto;
-        const existingUser = await this.prisma.user.findUnique({
-            where: { email },
-        });
-        if (existingUser) {
-            throw new BadRequestException('User already exists');
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await this.prisma.user.create({
-            data: {
-                email,
-                password: hashedPassword,
-                name,
-            },
-        });
-        const tokens = this.generateTokens(user.id, user.email);
-        return {
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
-            user: {
+        try {
+            const { email, password, name } = registerDto;
+            const existingUser = await this.prisma.user.findUnique({
+                where: { email },
+            });
+            if (existingUser) {
+                throw new BadRequestException('Email already registered');
+            }
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const user = await this.prisma.user.create({
+                data: {
+                    email,
+                    password: hashedPassword,
+                    name,
+                },
+            });
+            this.logger.log(`User registered successfully: ${user.email}`);
+            return {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-            },
-        };
+            };
+        }
+        catch (error) {
+            this.logger.error(`Registration error: ${error.message}`);
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new BadRequestException('Registration failed');
+        }
     }
     async login(loginDto) {
-        const { email, password } = loginDto;
-        const user = await this.prisma.user.findUnique({
-            where: { email },
-        });
-        if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+        try {
+            const { email, password } = loginDto;
+            const user = await this.prisma.user.findUnique({
+                where: { email },
+            });
+            if (!user) {
+                throw new UnauthorizedException('Invalid email or password');
+            }
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+            if (!isPasswordValid) {
+                throw new UnauthorizedException('Invalid email or password');
+            }
+            this.logger.log(`User logged in successfully: ${user.email}`);
+            const tokens = this.generateTokens(user.id, user.email);
+            return {
+                accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                },
+            };
         }
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials');
+        catch (error) {
+            this.logger.error(`Login error: ${error.message}`);
+            if (error instanceof UnauthorizedException) {
+                throw error;
+            }
+            throw new UnauthorizedException('Login failed');
         }
-        const tokens = this.generateTokens(user.id, user.email);
-        return {
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-            },
-        };
     }
     async refresh(refreshToken) {
         try {
+            if (!refreshToken) {
+                throw new BadRequestException('Refresh token is required');
+            }
             const decoded = this.jwtService.verify(refreshToken, {
                 secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret-key',
             });
             const accessToken = this.jwtService.sign({ sub: decoded.sub, email: decoded.email }, { expiresIn: '15m' });
+            this.logger.log(`Token refreshed for user: ${decoded.email}`);
             return { accessToken };
         }
-        catch {
-            throw new UnauthorizedException('Invalid refresh token');
+        catch (error) {
+            this.logger.error(`Token refresh error: ${error.message}`);
+            throw new UnauthorizedException('Invalid or expired refresh token');
         }
     }
     generateTokens(userId, email) {
@@ -89,7 +111,7 @@ let AuthService = class AuthService {
         return { accessToken, refreshToken };
     }
 };
-AuthService = __decorate([
+AuthService = AuthService_1 = __decorate([
     Injectable(),
     __metadata("design:paramtypes", [PrismaService,
         JwtService])

@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { AuthResponseDto } from './dto/auth-response.dto.js';
+import { UserDto } from './dto/user.dto.js';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -15,7 +16,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
+  async register(registerDto: RegisterDto): Promise<UserDto> {
     try {
       const { email, password, name } = registerDto;
 
@@ -41,16 +42,10 @@ export class AuthService {
 
       this.logger.log(`User registered successfully: ${user.email}`);
 
-      // Generate tokens
-      const tokens = this.generateTokens(user.id, user.email);
       return {
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        },
+        id: user.id,
+        email: user.email,
+        name: user.name,
       };
     } catch (error) {
       this.logger.error(`Registration error: ${error.message}`);

@@ -21,6 +21,7 @@ AuthModule = __decorate([
         ],
         providers: [AuthService, PrismaService],
         controllers: [AuthController],
+        exports: [JwtModule],
     })
 ], AuthModule);
 export { AuthModule };
