@@ -1,73 +1,207 @@
-# React + TypeScript + Vite
+# Task Tracker Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, feature-rich React + TypeScript frontend for task management with JWT authentication and automatic token refresh.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Authentication** - Login, registration, JWT tokens, automatic refresh
+- **Task Management** - CRUD operations with filtering and stats
+- **Protected Routes** - Route guards for authenticated users
+- **Auto Token Refresh** - Seamless token refresh without user interaction
+- **Responsive Design** - Mobile-first Tailwind CSS styling
+- **Type Safe** - Full TypeScript implementation
+- **Error Handling** - User-friendly error messages and validation
 
-## React Compiler
+## 🚀 Quick Start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
+- Node.js 16+
+- Backend API running on `http://localhost:3000`
 
-## Expanding the ESLint configuration
+### Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+cd task-tracker-frontend
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+npm install
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Create .env file (or update existing)
+echo "VITE_API_URL=http://localhost:3000" > .env
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Start development server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open `http://localhost:5173` in your browser.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 📚 Architecture
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Key Features
+
+**Automatic Token Refresh:**
 ```
+- Request interceptor adds Bearer token to all requests
+- Response interceptor checks for 401 errors
+- Failed requests queued while refreshing
+- New token obtained from /auth/refresh endpoint
+- Failed requests retried with new token
+- Queue processed after successful refresh
+```
+
+**Global Auth State:**
+- React Context API for user, tokens, and auth state
+- Custom `useAuth()` hook for easy access
+- Automatic token persistence in localStorage
+
+**Protected Routes:**
+- `ProtectedRoute` component checks authentication
+- Redirects unauthenticated users to login
+- Shows loading state while checking auth
+
+### Folder Structure
+
+```
+src/
+├── types/              # TypeScript interfaces
+├── services/           # API client with interceptors
+├── contexts/           # Auth context & state
+├── hooks/              # Custom React hooks
+├── components/         # Reusable UI components
+├── pages/              # Page components
+├── utils/              # Helpers & constants
+├── App.tsx             # Main app with routing
+└── main.tsx            # Entry point
+```
+
+## 🔐 Token Management
+
+### How It Works
+
+1. **Login** → Backend returns `accessToken` and `refreshToken`
+2. **Storage** → Both tokens stored in localStorage
+3. **Requests** → Access token added to Authorization header
+4. **Expiry** → If token expires, interceptor catches 401
+5. **Refresh** → New token obtained from /auth/refresh
+6. **Retry** → Original request retried with new token
+
+### Request Flow
+
+```
+User Request
+    ↓
+Add Bearer token from localStorage
+    ↓
+Send to Backend API
+    ↓
+Success (2xx) → Return response
+    ↓
+Unauthorized (401) → Refresh token
+    ↓
+Get new token from /auth/refresh
+    ↓
+Retry original request
+    ↓
+Return response
+```
+
+## 🛠 Key Files
+
+| File | Purpose |
+|------|---------|
+| `services/apiClient.ts` | Axios client with token interceptors |
+| `contexts/AuthContext.tsx` | Global auth state management |
+| `hooks/useAuth.ts` | Hook to access auth context |
+| `components/ProtectedRoute.tsx` | Route guard for auth pages |
+| `pages/AuthPage.tsx` | Login/Register page |
+| `pages/TasksPage.tsx` | Main tasks management page |
+| `types/index.ts` | All TypeScript interfaces |
+
+## 🧪 Testing
+
+```bash
+# Start backend
+cd ../backend && npm run start:dev
+
+# Start frontend (in new terminal)
+npm run dev
+
+# Visit http://localhost:5173
+# Register → Login → Create tasks → Test token refresh
+```
+
+## 📦 Scripts
+
+```bash
+npm run dev        # Start dev server
+npm run build      # Build for production
+npm run lint       # Run ESLint
+npm run preview    # Preview production build
+```
+
+## ⚙️ Environment Variables
+
+Create `.env` file:
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+## 🎨 Styling
+
+- Tailwind CSS 4.2 for utility-first styling
+- Responsive grid layouts
+- Smooth transitions and animations
+- Accessible form inputs and buttons
+
+## 📋 API Endpoints Used
+
+**Auth:**
+- `POST /auth/register` - Create account
+- `POST /auth/login` - Login user
+- `POST /auth/refresh` - Refresh access token
+
+**Tasks:**
+- `GET /tasks` - List all tasks
+- `POST /tasks` - Create task
+- `PUT /tasks/:id` - Update task
+- `DELETE /tasks/:id` - Delete task
+
+## ✅ Best Practices Implemented
+
+- ✅ Full TypeScript type safety
+- ✅ Organized folder structure by feature
+- ✅ Separation of concerns (services, components, pages)
+- ✅ Reusable component architecture
+- ✅ Custom React hooks
+- ✅ Global state management with Context API
+- ✅ Automatic token refresh with queue management
+- ✅ Protected routes
+- ✅ Error handling and user feedback
+- ✅ Responsive mobile-first design
+- ✅ Loading and error states
+- ✅ Form validation
+
+## 🐛 Troubleshooting
+
+**"Cannot connect to API"**
+- Check backend is running on `http://localhost:3000`
+- Verify `VITE_API_URL` in `.env`
+
+**"Unauthorized" errors**
+- Clear localStorage and login again
+- Check JWT_SECRET matches between frontend and backend
+
+**"Token refresh failing"**
+- Verify refresh endpoint at `POST /auth/refresh`
+- Check response includes `accessToken`
+
+## 📚 Stack
+
+- React 19.2
+- TypeScript 5
+- Vite 5
+- Tailwind CSS 4
+- Axios 1.15
+
+## 📄 License
+
+UNLICENSED

@@ -29,6 +29,7 @@ export const UserScalarFieldEnum = {
 export const TaskScalarFieldEnum = {
     id: 'id',
     title: 'title',
+    description: 'description',
     completed: 'completed',
     userId: 'userId',
     createdAt: 'createdAt',
@@ -41,5 +42,9 @@ export const SortOrder = {
 export const QueryMode = {
     default: 'default',
     insensitive: 'insensitive'
+};
+export const NullsOrder = {
+    first: 'first',
+    last: 'last'
 };
 //# sourceMappingURL=prismaNamespaceBrowser.js.map

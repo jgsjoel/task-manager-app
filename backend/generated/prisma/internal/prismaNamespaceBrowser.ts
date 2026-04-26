@@ -86,6 +86,7 @@ export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof User
 export const TaskScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  description: 'description',
   completed: 'completed',
   userId: 'userId',
   createdAt: 'createdAt',
@@ -109,4 +110,12 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

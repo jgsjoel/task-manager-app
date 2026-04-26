@@ -15,6 +15,7 @@ export class TaskService {
       const task = await this.prisma.task.create({
         data: {
           title: createTaskDto.title,
+          description: createTaskDto.description,
           completed: createTaskDto.completed ?? false,
           userId,
         },
@@ -78,6 +79,7 @@ export class TaskService {
         where: { id: taskId },
         data: {
           title: updateTaskDto.title ?? task.title,
+          description: updateTaskDto.description ?? task.description,
           completed: updateTaskDto.completed ?? task.completed,
         },
       });
