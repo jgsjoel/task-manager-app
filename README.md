@@ -6,7 +6,7 @@ A secure, full-stack task management system built for the Residue Solutions Inte
 
 | Service | URL |
 |---|---|
-| Frontend | https://task-manager-app-wgds-kbc5crbxu-joels-projects-96585023.vercel.app |
+| Frontend | https://task-manager-app-wgds.vercel.app |
 | Backend API | https://backend1-yt2t.onrender.com |
 
 ---
