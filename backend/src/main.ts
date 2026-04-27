@@ -13,11 +13,11 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-  origin: process.env.CORS_ORIGIN?.split(',') || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization','X-CSRF-Token'],
-});
+    origin: process.env.CORS_ORIGIN?.split(',') || 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+  });
 
   const isProd = process.env.NODE_ENV === 'production';
   const allowedConnectSrc = process.env.CORS_ORIGIN?.split(',') ?? [];
@@ -27,24 +27,24 @@ async function bootstrap() {
       contentSecurityPolicy: {
         directives: isProd
           ? {
-              defaultSrc: ["'self'"],
-              scriptSrc: ["'self'"],
-              styleSrc: ["'self'"],
-              imgSrc: ["'self'", "data:", "https:"],
-              connectSrc: ["'self'", ...allowedConnectSrc],
-              objectSrc: ["'none'"],
-              baseUri: ["'self'"],
-              frameAncestors: ["'none'"],
-              formAction: ["'self'"],
-              upgradeInsecureRequests: [],
-            }
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'", ...allowedConnectSrc],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            frameAncestors: ["'none'"],
+            formAction: ["'self'"],
+            upgradeInsecureRequests: [],
+          }
           : {
-              defaultSrc: ["'self'"],
-              objectSrc: ["'none'"],
-              baseUri: ["'self'"],
-              frameAncestors: ["'none'"],
-              formAction: ["'self'"],
-            },
+            defaultSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            frameAncestors: ["'none'"],
+            formAction: ["'self'"],
+          },
       },
     }),
   );
@@ -65,7 +65,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalFilters(new ValidationExceptionFilter());
 
-  await app.listen(process.env.API_PORT ?? 3000, process.env.API_HOST ?? 'localhost');
-  console.log(`✓ Application running on http://${process.env.API_HOST ?? 'localhost'}:${process.env.API_PORT ?? 3000}`);
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
