@@ -8,8 +8,8 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     PrismaModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'your-secret-key',
-      signOptions: { expiresIn: '15m' },
+      secret: process.env.JWT_SECRET!,
+      signOptions: { expiresIn: (process.env.JWT_EXPIRY!) as any },
     }),
   ],
   providers: [TaskService],

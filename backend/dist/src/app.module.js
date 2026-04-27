@@ -5,15 +5,40 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module.js';
 import { TaskModule } from './task/task.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { CsrfMiddleware } from './common/guards/csrf.middleware.js';
+import { CsrfService } from './common/guards/csrf.service.js';
 let AppModule = class AppModule {
+    configure(consumer) {
+        consumer
+            .apply(CsrfMiddleware)
+            .forRoutes('auth/refresh', 'auth/logout');
+    }
 };
 AppModule = __decorate([
     Module({
-        imports: [PrismaModule, AuthModule, TaskModule],
-        providers: [],
+        imports: [
+            ThrottlerModule.forRoot([
+                {
+                    ttl: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '15000'),
+                    limit: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '5'),
+                },
+            ]),
+            PrismaModule,
+            AuthModule,
+            TaskModule,
+        ],
+        providers: [
+            CsrfService,
+            {
+                provide: APP_GUARD,
+                useClass: ThrottlerGuard,
+            },
+        ],
     })
 ], AppModule);
 export { AppModule };

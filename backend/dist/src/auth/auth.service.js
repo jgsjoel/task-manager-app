@@ -87,15 +87,12 @@ let AuthService = AuthService_1 = class AuthService {
     }
     async refresh(refreshToken) {
         try {
-            if (!refreshToken) {
-                throw new BadRequestException('Refresh token is required');
-            }
             const decoded = this.jwtService.verify(refreshToken, {
                 secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret-key',
             });
-            const accessToken = this.jwtService.sign({ sub: decoded.sub, email: decoded.email }, { expiresIn: '15m' });
+            const tokens = this.generateTokens(decoded.sub, decoded.email);
             this.logger.log(`Token refreshed for user: ${decoded.email}`);
-            return { accessToken };
+            return tokens;
         }
         catch (error) {
             this.logger.error(`Token refresh error: ${error.message}`);

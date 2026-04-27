@@ -1,6 +1,6 @@
 export class AuthResponseDto {
     accessToken;
-    refreshToken;
+    csrfToken;
     user;
 }
 //# sourceMappingURL=auth-response.dto.js.map

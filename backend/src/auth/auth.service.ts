@@ -3,7 +3,6 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
-import { AuthResponseDto } from './dto/auth-response.dto.js';
 import { UserDto } from './dto/user.dto.js';
 import * as bcrypt from 'bcrypt';
 
@@ -56,7 +55,7 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
+  async login(loginDto: LoginDto): Promise<{ accessToken: string; refreshToken: string; user: UserDto }> {
     try {
       const { email, password } = loginDto;
 
@@ -96,23 +95,17 @@ export class AuthService {
     }
   }
 
-  async refresh(refreshToken: string): Promise<{ accessToken: string }> {
+  async refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
     try {
-      if (!refreshToken) {
-        throw new BadRequestException('Refresh token is required');
-      }
-
       const decoded = this.jwtService.verify(refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret-key',
       });
 
-      const accessToken = this.jwtService.sign(
-        { sub: decoded.sub, email: decoded.email },
-        { expiresIn: '15m' },
-      );
+      // Rotate: issue a brand-new refresh token each time
+      const tokens = this.generateTokens(decoded.sub, decoded.email);
 
       this.logger.log(`Token refreshed for user: ${decoded.email}`);
-      return { accessToken };
+      return tokens;
     } catch (error) {
       this.logger.error(`Token refresh error: ${error.message}`);
       throw new UnauthorizedException('Invalid or expired refresh token');
@@ -122,14 +115,14 @@ export class AuthService {
   private generateTokens(userId: string, email: string) {
     const accessToken = this.jwtService.sign(
       { sub: userId, email },
-      { expiresIn: '15m' },
+      { expiresIn: (process.env.JWT_EXPIRY || '15m') as any },
     );
 
     const refreshToken = this.jwtService.sign(
       { sub: userId, email },
       {
         secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret-key',
-        expiresIn: '7d',
+        expiresIn: (process.env.JWT_REFRESH_EXPIRY || '7d') as any,
       },
     );
 

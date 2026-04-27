@@ -8,6 +8,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
+import { CsrfService } from '../common/guards/csrf.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 let AuthModule = class AuthModule {
 };
@@ -19,7 +20,7 @@ AuthModule = __decorate([
                 signOptions: { expiresIn: '15m' },
             }),
         ],
-        providers: [AuthService, PrismaService],
+        providers: [AuthService, CsrfService, PrismaService],
         controllers: [AuthController],
         exports: [JwtModule],
     })

@@ -10,26 +10,68 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Controller, Post, Body, BadRequestException, HttpCode } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpCode, Req, Res, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
+import { CsrfService } from '../common/guards/csrf.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
+const REFRESH_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/auth',
+};
+const CSRF_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/auth',
+};
 let AuthController = class AuthController {
     authService;
-    constructor(authService) {
+    csrfService;
+    constructor(authService, csrfService) {
         this.authService = authService;
+        this.csrfService = csrfService;
     }
     async register(registerDto) {
         return this.authService.register(registerDto);
     }
-    async login(loginDto) {
-        return this.authService.login(loginDto);
+    getCsrfToken(res) {
+        const cookieSecret = this.csrfService.generateCookieSecret();
+        res.cookie('csrfSecret', cookieSecret, CSRF_COOKIE_OPTIONS);
+        return { csrfToken: this.csrfService.generateToken(cookieSecret) };
     }
-    async refresh(body) {
-        if (!body.refreshToken) {
-            throw new BadRequestException('Refresh token is required');
+    async login(loginDto, res) {
+        const authResponse = await this.authService.login(loginDto);
+        res.cookie('refreshToken', authResponse.refreshToken, REFRESH_COOKIE_OPTIONS);
+        const cookieSecret = this.csrfService.generateCookieSecret();
+        res.cookie('csrfSecret', cookieSecret, CSRF_COOKIE_OPTIONS);
+        return {
+            accessToken: authResponse.accessToken,
+            csrfToken: this.csrfService.generateToken(cookieSecret),
+            user: authResponse.user,
+        };
+    }
+    async refresh(req, res) {
+        const refreshToken = req.cookies?.refreshToken;
+        if (!refreshToken) {
+            throw new UnauthorizedException('No refresh token provided');
         }
-        return this.authService.refresh(body.refreshToken);
+        const tokens = await this.authService.refresh(refreshToken);
+        res.cookie('refreshToken', tokens.refreshToken, REFRESH_COOKIE_OPTIONS);
+        const cookieSecret = this.csrfService.generateCookieSecret();
+        res.cookie('csrfSecret', cookieSecret, CSRF_COOKIE_OPTIONS);
+        return {
+            accessToken: tokens.accessToken,
+            csrfToken: this.csrfService.generateToken(cookieSecret),
+        };
+    }
+    logout(res) {
+        res.clearCookie('refreshToken', { path: '/auth' });
+        res.clearCookie('csrfSecret', { path: '/auth' });
     }
 };
 __decorate([
@@ -41,22 +83,43 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
 __decorate([
-    Post('login'),
-    __param(0, Body()),
+    Get('csrf-token'),
+    HttpCode(200),
+    __param(0, Res({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [LoginDto]),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Object)
+], AuthController.prototype, "getCsrfToken", null);
+__decorate([
+    Post('login'),
+    HttpCode(200),
+    __param(0, Body()),
+    __param(1, Res({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [LoginDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
     Post('refresh'),
-    __param(0, Body()),
+    HttpCode(200),
+    __param(0, Req()),
+    __param(1, Res({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "refresh", null);
+__decorate([
+    Post('logout'),
+    HttpCode(204),
+    __param(0, Res({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "logout", null);
 AuthController = __decorate([
     Controller('auth'),
-    __metadata("design:paramtypes", [AuthService])
+    __metadata("design:paramtypes", [AuthService,
+        CsrfService])
 ], AuthController);
 export { AuthController };
 //# sourceMappingURL=auth.controller.js.map

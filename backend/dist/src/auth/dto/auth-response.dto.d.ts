@@ -1,6 +1,6 @@
 export declare class AuthResponseDto {
     accessToken: string;
-    refreshToken: string;
+    csrfToken: string;
     user: {
         id: string;
         email: string;

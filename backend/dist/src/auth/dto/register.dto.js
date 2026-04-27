@@ -8,6 +8,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { IsEmail, IsString, MinLength, IsNotEmpty } from 'class-validator';
+import { Transform } from 'class-transformer';
+import sanitizeHtml from 'sanitize-html';
+const sanitizeOptions = { allowedTags: [], allowedAttributes: {} };
 export class RegisterDto {
     email;
     password;
@@ -25,6 +28,7 @@ __decorate([
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
 __decorate([
+    Transform(({ value }) => typeof value === 'string' ? sanitizeHtml(value, sanitizeOptions).trim() : value),
     IsString({ message: 'Name must be a string' }),
     MinLength(2, { message: 'Name must be at least 2 characters' }),
     IsNotEmpty({ message: 'Name is required' }),
