@@ -6,6 +6,8 @@
 .env.test.local
 .env.production.local
 
+frontend-nexts/
+
 # Dependencies
 node_modules/
 npm-debug.log
