@@ -41,6 +41,6 @@ Axios + CSRF hdr  ──►    POST /auth/logout     ◄── cookies
 
 ## Better Tech Choices (if scaling further)
 
-- **Redis** — would replace in-memory rate limiting so it works across multiple instances
+- **Redis** — would replace in-memory rate limiting so it works across multiple app instances
 - **HttpOnly-only auth flow** — removing localStorage entirely would reduce XSS risk further
 - **OAuth (e.g., Google login)** — removes password handling completely and is more secure long-term
