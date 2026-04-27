@@ -25,7 +25,7 @@ AppModule = __decorate([
             ThrottlerModule.forRoot([
                 {
                     ttl: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '15000'),
-                    limit: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '5'),
+                    limit: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '10'),
                 },
             ]),
             PrismaModule,

@@ -43,8 +43,8 @@ export const TaskModal = ({ task, isOpen, onClose }: TaskModalProps) => {
   const displayTask = fullTask || task;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+    <div className="fixed inset-0 backdrop-blur-sm bg-black/20 flex items-center justify-center z-50 transition-opacity">
+      <div className="bg-white rounded-2xl shadow-2xl ring-1 ring-black/10 p-6 max-w-md w-full mx-4">
         {isLoading ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

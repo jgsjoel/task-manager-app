@@ -1,138 +1,46 @@
-# Task Tracker - Phase 1 Planning & Architecture
+# Task Tracker – Phase 1 Plan
 
 ## Backend Choice: NestJS
 
-**Justification:**
-- Enterprise-grade framework with excellent TypeScript support
-- Built-in dependency injection and modular architecture
-- Powerful middleware/guard system for authentication and authorization
-- Strong community and extensive documentation
-- Great for scaling with clear separation of concerns
+NestJS was chosen over Express.js and Next.js API routes for the following reasons:
 
-**Alternative Considered:** Express.js
-- More lightweight but requires more manual setup for auth, validation, and structure
-- NestJS provides these out-of-the-box, reducing boilerplate
-
----
+- **Structure by default** — enforces modular architecture (Auth, Task modules), separation of concerns, and dependency injection out of the box. Express requires this to be manually designed, increasing risk of inconsistency.
+- **TypeScript-first** — decorators, DTOs, and typed guards make validation and auth pipelines far safer and more maintainable than raw Express middleware.
+- **Built-in security primitives** — guards (`JwtGuard`), middleware (`CsrfMiddleware`), pipes (`ValidationPipe`), and filters (`AllExceptionsFilter`) map cleanly to security requirements without third-party solutions.
+- **Next.js API routes** were ruled out because mixing frontend and backend in one deployment couples concerns, complicates horizontal scaling, and makes independent backend deployment (Docker, Railway) impossible.
 
 ## Architecture Overview
 
-### High-Level Architecture
 ```
-Frontend (React + Vite)
-    ↓ (HTTPS/JWT)
-API Gateway Layer
-    ↓ (Rate Limiting, CORS, CSP)
-Backend (NestJS)
-    ├── Auth Module (login, register, JWT refresh)
-    ├── Task Module (CRUD operations)
-    └── Prisma ORM
-        ↓
-PostgreSQL Database
+Next.js (Vercel)         NestJS API (Railway/Docker)        Neon PostgreSQL
+─────────────────        ──────────────────────────        ─────────────────
+Auth pages        ──►    POST /auth/register               Users table
+Tasks dashboard   ──►    POST /auth/login                  Tasks table
+Protected routes  ──►    POST /auth/refresh    ◄── JWT
+Axios + CSRF hdr  ──►    POST /auth/logout     ◄── cookies
+                  ──►    GET/POST/PUT/DELETE /tasks
 ```
 
-### Frontend Architecture
-- **Framework:** React 19 + React Router DOM (client-side routing)
-- **HTTP Client:** Axios with interceptors for automatic token refresh
-- **State Management:** React Context API for auth state
-- **Styling:** Tailwind CSS
-- **Security:** Secure token storage, XSS prevention via React, CSRF token handling
-
-### Backend Architecture
-- **Framework:** NestJS with TypeScript
-- **Authentication:** JWT with access/refresh token pattern
-- **Database:** PostgreSQL with Prisma ORM
-- **Security:** Password hashing (bcrypt), rate limiting, input validation, CORS
-- **API Design:** RESTful with proper HTTP status codes
-
----
+- **Frontend:** Next.js App Router, Axios with request/response interceptors, React Context for auth state, Tailwind CSS
+- **Auth:** Short-lived JWT access token (15 min) + long-lived refresh token (7 days) in `HttpOnly` cookie; CSRF double-submit cookie pattern for cookie-dependent endpoints
+- **Database:** PostgreSQL via Prisma ORM (type-safe, parameterised queries, migration support)
 
 ## Security Considerations
 
-### Client-Side Security
-✅ **Implemented:**
-- XSS Prevention: React auto-escapes JSX, no `dangerouslySetInnerHTML`
-- Input validation and sanitization
-- Secure token storage in localStorage
-- Automatic token refresh with 401 handling
+| Layer | Risk | Mitigation |
+|---|---|---|
+| Client | XSS | React JSX escaping; `sanitize-html` on all user input DTOs; CSP headers via `next.config.ts` |
+| Client | CSRF | Double-submit cookie: `csrfSecret` HttpOnly cookie + `X-CSRF-Token` header validated server-side |
+| Client | Token theft | Access token in memory/localStorage (short TTL); refresh token in `HttpOnly; SameSite=Strict` cookie — inaccessible to JS |
+| Server | Brute force | `@nestjs/throttler` — 5 requests / 15 s globally, keyed by IP |
+| Server | Injection | Prisma parameterised queries; `class-validator` whitelist + `forbidNonWhitelisted`; `sanitize-html` strips tags |
+| Server | Auth bypass | `JwtGuard` on all task routes; ownership check (`task.userId === req.user.sub`) on every operation |
+| Server | Info leakage | `AllExceptionsFilter` returns generic messages in production; no stack traces exposed |
+| Transport | MITM | `helmet` CSP + `upgradeInsecureRequests` in production; strict CORS origin allowlist |
 
-🔐 **Enhanced:**
-- CSRF token validation on state-changing requests
-- Content Security Policy (CSP) headers
-- httpOnly cookie support (optional future improvement)
+## Better Tech Choices (if applicable)
 
-### Server-Side Security
-✅ **Implemented:**
-- Password hashing with bcrypt (10 salt rounds)
-- JWT validation on all protected routes
-- User authorization (users can only access/modify own tasks)
-- Input validation with class-validator
-- Error handling without stack trace leaks
+- **Redis** would replace in-memory rate limiting state, enabling it to work correctly across multiple backend instances.
+- **HttpOnly-only token storage** (no localStorage) would eliminate the access token XSS surface entirely; requires backend to issue short-lived tokens aggressively and rely solely on the refresh flow.
+- **OAuth 2.0 (e.g. Google)** would eliminate password storage and brute-force risk at the auth layer altogether, which is the strongest long-term improvement for a production system.
 
-🔐 **Enhanced:**
-- Rate limiting (prevent brute force)
-- CORS with strict origins
-- CSRF protection for state-changing operations
-- HTTP security headers (helmet integration)
-
-### Database Security
-- Parameterized queries via Prisma ORM (SQL injection prevention)
-- User isolation (userId foreign key constraint)
-- No sensitive data in logs
-
----
-
-## Tech Stack Justification
-
-| Layer | Choice | Why |
-|-------|--------|-----|
-| Frontend | React + Vite | Fast dev experience, simple SPA, no SSR needed for this app |
-| Routing | React Router v7 | Industry standard, better than custom routing |
-| HTTP Client | Axios | Excellent interceptor support for auth handling |
-| Backend | NestJS | Enterprise patterns, great TypeScript support, scalable |
-| Database | PostgreSQL + Prisma | Type-safe ORM, powerful migrations, excellent DX |
-| Styling | Tailwind CSS | Utility-first, fast UI development, responsive by default |
-| Auth | JWT | Stateless, scalable, works well with SPAs |
-
----
-
-## Potential Improvements
-
-1. **Future Enhancements:**
-   - Database caching layer (Redis)
-   - WebSocket support for real-time task updates
-   - Task categories/labels
-   - Task priorities and due dates
-   - User notifications/reminders
-
-2. **At Scale:**
-   - API versioning (v1, v2)
-   - GraphQL for complex queries
-   - Microservices with message queues
-   - Distributed caching
-   - Load balancing
-
-3. **Security Upgrades:**
-   - OAuth 2.0 / Google Sign-in
-   - Two-factor authentication (2FA)
-   - Audit logging
-   - Rate limiting by user/IP
-   - DDoS protection
-
----
-
-## Deployment Strategy
-
-- **Frontend:** Vercel/Netlify (automatic deployments from git)
-- **Backend:** Railway/Render (Node.js hosting with PostgreSQL)
-- **Environment:** Separate dev/staging/production configs
-- **CI/CD:** GitHub Actions for automated testing and deployment
-
----
-
-## Security Incidents Response
-- All errors logged without sensitive data
-- Rate limiting prevents brute force attempts
-- JWT expiry forces re-authentication
-- CORS prevents cross-origin attacks
-- Input validation prevents injection attacks

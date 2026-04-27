@@ -51,8 +51,8 @@ async function bootstrap() {
     }));
     app.useGlobalFilters(new AllExceptionsFilter());
     app.useGlobalFilters(new ValidationExceptionFilter());
-    await app.listen(process.env.API_PORT ?? 3000, process.env.API_HOST ?? 'localhost');
-    console.log(`✓ Application running on http://${process.env.API_HOST ?? 'localhost'}:${process.env.API_PORT ?? 3000}`);
+    const port = process.env.PORT || 3000;
+    await app.listen(port, '0.0.0.0');
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
