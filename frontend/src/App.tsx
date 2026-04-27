@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { PublicRoute } from './components/PublicRoute';
 import { Header } from './components/Header';
 import { AuthPage } from './pages/AuthPage';
 import { TasksPage } from './pages/TasksPage';
@@ -11,9 +12,9 @@ function App() {
     // Using react-router-dom for navigation
     <AuthProvider>
       <Routes>
-        <Route path="/login" element={<AuthPage />} />
-        <Route path="/register" element={<AuthPage />} />
-        <Route path="/" element={<AuthPage />} />
+        <Route path="/login" element={<PublicRoute><AuthPage /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><AuthPage /></PublicRoute>} />
+        <Route path="/" element={<PublicRoute><AuthPage /></PublicRoute>} />
         <Route
           path="/tasks"
           element={
