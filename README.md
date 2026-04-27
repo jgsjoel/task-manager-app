@@ -1,246 +1,299 @@
-# Task Tracker - Complete Assessment
+# Task Tracker
 
-Full-stack task management application meeting Residue Solutions assessment requirements.
+A secure, full-stack task management system built for the Residue Solutions Intern Software Engineer Technical Assessment.
 
-## 📋 Project Overview
+## Live URLs
 
-A secure, production-ready task management system with JWT authentication, real-time updates, and comprehensive security features.
+| Service | URL |
+|---|---|
+| Frontend | https://task-manager-app-wgds-j19lyzpn7-joels-projects-96585023.vercel.app/login |
+| Backend API | https://backend1-yt2t.onrender.com |
 
-**Status:** ✅ Phase 1-3 Complete
-- ✅ Phase 1: Planning & Architecture (PLAN.md)
-- ✅ Phase 2: Implementation & Deployment
-- ✅ Phase 3: Code Review Ready
+---
 
-## 🚀 Quick Start
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19 + TypeScript + Vite + React Router v7 + Tailwind CSS |
+| Backend | NestJS 11 + TypeScript |
+| Database | PostgreSQL (Neon) via Prisma ORM |
+| Auth | JWT access tokens (15 min) + refresh tokens (7 days, HttpOnly cookie) |
+| Deployment | Vercel (frontend) · Render (backend) |
+
+---
+
+## Local Setup
 
 ### Prerequisites
+
 - Node.js 18+
-- PostgreSQL 14+
-- npm or yarn
+- npm
 
-### Frontend Setup
-```bash
-cd task-tracker-frontend
-cp .env.example .env.local
-npm install
-npm run dev
-# Opens at http://localhost:5173
-```
+### Backend
 
-### Backend Setup
 ```bash
 cd backend
 cp .env.example .env
+# Fill in DATABASE_URL, JWT_SECRET, CSRF_SECRET, CORS_ORIGIN
 npm install
 npx prisma migrate dev
 npm run start:dev
-# Runs at http://localhost:3000
+# API running at http://localhost:3000
 ```
-
-## ✨ Features
-
-### ✅ Authentication
-- User registration with password hashing (bcrypt)
-- JWT-based login with refresh tokens
-- Automatic token refresh on expiry
-- Secure logout with token cleanup
-
-### ✅ Task Management
-- Create, read, update, delete tasks
-- Task descriptions
-- Mark tasks as completed
-- Task statistics dashboard
-- User isolation (own tasks only)
-
-### ✅ Security Implemented
-- **Client-Side:** XSS prevention, CSRF tokens, secure token storage, CSP headers
-- **Server-Side:** Password hashing, rate limiting, input validation, JWT validation
-- **Database:** SQL injection prevention (Prisma ORM), user isolation
-- **Transport:** HTTPS ready, CORS configured, security headers
-
-### ✅ UI/UX
-- Responsive design (Tailwind CSS)
-- Loading & error states
-- Form validation
-- Custom modals (ConfirmDialog, AlertDialog)
-- Task detail modal
-- Real-time UI updates
-
-## 🔐 Security Features
-
-✅ Password hashing (bcrypt, 10 rounds)
-✅ JWT with access/refresh tokens  
-✅ XSS prevention (React escaping)
-✅ Input validation & sanitization
-✅ Rate limiting (5 req/15s)
-✅ CSRF token validation
-✅ Content Security Policy headers
-✅ User authorization (own tasks only)
-✅ Error handling without stack traces
-
-## 📚 Documentation
-
-- **[PLAN.md](PLAN.md)** - Phase 1: Architecture & Security Planning
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Deployment to Vercel/Railway
-- **[backend/README.md](backend/README.md)** - Backend API documentation
-- **[task-tracker-frontend/README.md](task-tracker-frontend/README.md)** - Frontend setup guide
-
-## 📊 Tech Stack
-
-- **Frontend:** React 19 + TypeScript + React Router + Tailwind CSS + Vite
-- **Backend:** NestJS + TypeScript + Prisma + PostgreSQL
-- **Authentication:** JWT (access + refresh tokens)
-- **Database:** PostgreSQL with Prisma ORM
-
-## 🚢 Deployment
-
-### Quick Deploy
-```bash
-# Frontend (Auto-deploy on git push)
-# → https://vercel.com (GitHub integration)
-
-# Backend (Auto-deploy on git push)  
-# → https://railway.app (GitHub integration)
-```
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for full instructions.
-
-## 📝 Assessment Criteria
-
-### Phase 1 ✅
-- Architecture overview & security planning
-- Backend choice justified (NestJS)
-- Tech stack reasoning
-- Scalability considerations
-
-### Phase 2 ✅
-- Full CRUD operations
-- Secure authentication
-- Rate limiting & security headers
-- CSRF protection
-- Professional code quality
-- Production-ready deployment
-
-### Phase 3 ✅
-- Clear code structure
-- Documented architectural decisions
-- Security at every layer
-- Ready for code walkthrough
-
-## 🎯 Key Features
-
-1. **Secure Authentication**
-   - Bcrypt password hashing
-   - JWT with refresh tokens
-   - Automatic token rotation
-
-2. **CSRF Protection**
-   - Token generation on GET requests
-   - Validation on state-changing requests
-   - Automatic expiry after 1 hour
-
-3. **Rate Limiting**
-   - 5 requests per 15 seconds
-   - IP-based tracking
-   - Prevents brute force attacks
-
-4. **Security Headers**
-   - Content Security Policy
-   - X-Content-Type-Options
-   - X-Frame-Options
-   - Strict-Transport-Security
-
-5. **Error Handling**
-   - No stack trace leaks
-   - User-friendly messages
-   - Comprehensive validation
-
-## 📖 Quick Reference
-
-### Start Development
-```bash
-# Terminal 1: Frontend
-cd task-tracker-frontend && npm run dev
-
-# Terminal 2: Backend  
-cd backend && npm run start:dev
-```
-
-### API Endpoints
-- `POST /auth/register` - Create user
-- `POST /auth/login` - Get tokens
-- `GET /tasks` - List tasks
-- `POST /tasks` - Create task
-- `PUT /tasks/:id` - Update task
-- `DELETE /tasks/:id` - Delete task
-
-### Environment Variables
-**Frontend:** `VITE_API_URL`
-**Backend:** `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`
-
-See `.env.example` files for all options.
-
-### Available Scripts
-
-- `npm run start:dev` - Start in development mode
-- `npm run build` - Build for production
-- `npm run lint` - Run ESLint
-- `npm test` - Run tests
-- `npm run test:e2e` - Run end-to-end tests
-
-## Frontend
-
-React/TypeScript application for task management.
-
-### Quick Start
-
-```bash
-cd task-tracker-frontend
-npm install
-npm run dev
-```
-
-### Build
-
-```bash
-npm run build
-npm run preview
-```
-
-## Technologies
-
-### Backend
-- NestJS 11
-- TypeScript
-- Prisma ORM
-- PostgreSQL
-- JWT Authentication
-- bcrypt for password hashing
-- class-validator for validation
-- class-transformer for data transformation
 
 ### Frontend
-- React 19+
-- TypeScript
-- Vite
-- ESLint
 
-## Development Workflow
+```bash
+cd frontend
+cp .env.example .env
+# Set VITE_API_URL=http://localhost:3000
+npm install
+npm run dev
+# App running at http://localhost:5173
+```
 
-1. Ensure environment variables are configured
-2. Start development servers:
-   - Backend: `npm run start:dev` (from backend/)
-   - Frontend: `npm run dev` (from task-tracker-frontend/)
-3. API available at http://localhost:3000
-4. Frontend available at http://localhost:5173
+---
 
-## Contributing
+## Authentication Flow
 
-- Follow eslint rules
-- Use TypeScript for type safety
-- Add tests for new features
-- Create feature branches for changes
+### On Application Load (session restore)
 
-## License
+```
+App mounts
+  -> GET /auth/csrf-token         (no auth required)
+  -> backend sets csrfSecret HttpOnly cookie, returns csrfToken in body
+  -> store csrfToken in sessionStorage
+  -> POST /auth/refresh            (refreshToken cookie sent automatically by browser)
+       header: X-CSRF-Token: <csrfToken>
+  -> backend validates CSRF, rotates refreshToken cookie + csrfSecret cookie
+  -> returns new accessToken + csrfToken in body
+  -> store accessToken in localStorage, csrfToken in sessionStorage
+  -> app ready — user is authenticated
+```
 
-UNLICENSED
+If the refresh fails (no cookie / expired), the user is redirected to `/login`.
+
+### Login
+
+```
+POST /auth/login   { email, password }
+  -> backend verifies password (bcrypt, 10 rounds)
+  -> sets refreshToken HttpOnly cookie  (path: /auth, 7 days, SameSite=Strict)
+  -> sets csrfSecret HttpOnly cookie    (path: /auth, 7 days, SameSite=Strict)
+  -> returns { accessToken, csrfToken, user } in body
+  -> client stores accessToken in localStorage, csrfToken in sessionStorage
+```
+
+### Authenticated Requests
+
+Every request to `/tasks` attaches:
+
+```
+Authorization: Bearer <accessToken>
+```
+
+When the access token expires (401 response), the Axios interceptor automatically:
+
+```
+POST /auth/refresh
+  header: X-CSRF-Token: <csrfToken>
+  (refreshToken cookie sent automatically by the browser)
+  -> receive new accessToken + csrfToken
+  -> retry the original request transparently
+```
+
+### Logout
+
+```
+POST /auth/logout
+  header: X-CSRF-Token: <csrfToken>
+  -> backend clears refreshToken and csrfSecret cookies
+  -> client clears localStorage and sessionStorage
+  -> redirect to /login
+```
+
+---
+
+## API Reference
+
+Full documentation: [backend/API.md](backend/API.md)
+
+### Auth Endpoints
+
+| Method | Endpoint | Auth | CSRF | Description |
+|---|---|---|---|---|
+| `POST` | `/auth/register` | — | — | Create account |
+| `POST` | `/auth/login` | — | — | Login, receive tokens |
+| `GET` | `/auth/csrf-token` | — | — | Issue CSRF token on page load |
+| `POST` | `/auth/refresh` | cookie | required | Rotate access + refresh tokens |
+| `POST` | `/auth/logout` | cookie | required | Clear session cookies |
+
+### Task Endpoints
+
+All task endpoints require `Authorization: Bearer <accessToken>`. Users can only access their own tasks — attempting to read or modify another user's task returns `403`.
+
+| Method | Endpoint | Description | Request Body |
+|---|---|---|---|
+| `GET` | `/tasks` | List all tasks | — |
+| `POST` | `/tasks` | Create task | `{ title, description?, completed? }` |
+| `GET` | `/tasks/:id` | Get single task | — |
+| `PUT` | `/tasks/:id` | Update task (partial) | `{ title?, description?, completed? }` |
+| `DELETE` | `/tasks/:id` | Delete task | — |
+
+**Task object shape:**
+
+```json
+{
+  "id": "uuid",
+  "title": "Buy groceries",
+  "description": "Milk, eggs, bread",
+  "completed": false,
+  "userId": "uuid",
+  "createdAt": "2026-04-27T10:00:00.000Z",
+  "updatedAt": "2026-04-27T10:00:00.000Z"
+}
+```
+
+**Validation:** `title` min 3 chars (required on create), `description` optional string, `completed` boolean. All string fields are HTML-sanitized via `sanitize-html` before being stored.
+
+**Error envelope:**
+
+```json
+{
+  "statusCode": 400,
+  "message": "Title must be at least 3 characters",
+  "error": "Bad Request",
+  "timestamp": "2026-04-27T10:00:00.000Z",
+  "path": "/tasks"
+}
+```
+
+---
+
+## Security Implementation
+
+### CSRF — Double-Submit Cookie Pattern
+
+The backend generates a random 32-byte `csrfSecret`, stores it in an `HttpOnly` cookie (inaccessible to JavaScript), and returns an HMAC-SHA256 signed token (`csrfToken`) in the response body. On `POST /auth/refresh` and `POST /auth/logout`, `CsrfMiddleware` reads both values and verifies the HMAC signature using a constant-time comparison (`timingSafeEqual`).
+
+A malicious third-party site cannot read the `csrfToken` from the response body because CORS blocks cross-origin reads. Without the token, the attacker cannot construct a valid `X-CSRF-Token` header, so the double-submit check fails.
+
+### XSS Prevention
+
+- **React JSX** escapes all dynamic values by default. No `dangerouslySetInnerHTML` is used anywhere in the codebase.
+- All user-supplied string fields (`title`, `description`, `name`) are run through `sanitize-html` with zero allowed tags inside NestJS DTOs **before** being stored in the database.
+- `HttpOnly` cookies (`refreshToken`, `csrfSecret`) are completely inaccessible to JavaScript — even in the event of an XSS attack, these tokens cannot be stolen.
+
+### Content Security Policy (CSP)
+
+Applied server-side via [Helmet](https://helmetjs.github.io/). Production directives:
+
+```
+default-src   'self'
+script-src    'self'
+style-src     'self'
+img-src       'self' data: https:
+connect-src   'self' <CORS_ORIGIN values>
+object-src    'none'
+frame-ancestors 'none'
+form-action   'self'
+upgrade-insecure-requests
+```
+
+This prevents inline script injection, clickjacking (`frame-ancestors 'none'`), and mixed content (`upgrade-insecure-requests`).
+
+### CORS
+
+Configured in `main.ts`:
+
+```ts
+app.enableCors({
+  origin: process.env.CORS_ORIGIN?.split(',').map(o => o.trim()),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+});
+```
+
+Only origins listed in `CORS_ORIGIN` (set via the Render environment dashboard) are permitted. `credentials: true` is required for the browser to send cookies on cross-origin requests.
+
+### Token Storage
+
+| Token | Storage | Rationale |
+|---|---|---|
+| `accessToken` (15 min JWT) | `localStorage` | Short TTL limits XSS exposure window |
+| `refreshToken` (7 days) | `HttpOnly` cookie | Never accessible to JavaScript |
+| `csrfToken` | `sessionStorage` | Cleared on tab close; inaccessible cross-origin |
+| `csrfSecret` | `HttpOnly` cookie | Never accessible to JavaScript |
+
+### Rate Limiting
+
+Global `@nestjs/throttler` guard: **5 requests per 15 seconds per IP**. Returns `429 Too Many Requests` when exceeded, preventing brute-force login attempts.
+
+### Password Hashing
+
+bcrypt with 10 salt rounds. Passwords are never returned in any API response. Even if the database is compromised, passwords cannot be reversed without brute-force effort per-hash.
+
+### Authorization
+
+`JwtGuard` protects all `/tasks` routes. Every service method additionally asserts `task.userId === req.user.sub`, so a valid JWT for user A cannot read or modify user B's tasks.
+
+### Error Handling
+
+`AllExceptionsFilter` is applied globally. In production it strips stack traces and returns only a human-readable `message`. Internal errors always return the generic string `"Internal server error"` — no implementation details are leaked.
+
+---
+
+## Project Structure
+
+```
+task-tracker/
+├── PLAN.md                    # Phase 1: Architecture & security planning
+├── backend/
+│   ├── API.md                 # Full API reference
+│   ├── .env.example           # Environment variable template
+│   ├── Dockerfile             # Multi-stage production Docker image
+│   ├── prisma/schema.prisma   # Database schema (User, Task)
+│   └── src/
+│       ├── auth/              # Auth module — controller, service, DTOs
+│       ├── task/              # Task module — controller, service, DTOs
+│       └── common/
+│           ├── guards/        # JwtGuard, CsrfService
+│           ├── filters/       # AllExceptionsFilter, ValidationExceptionFilter
+│           └── decorators/    # @GetUser()
+└── frontend/
+    ├── .env.example           # Environment variable template
+    ├── vercel.json            # SPA rewrite rule for Vercel
+    └── src/
+        ├── components/        # Reusable UI (Header, TaskItem, TaskModal, dialogs)
+        ├── contexts/          # AuthContext — global auth state
+        ├── hooks/             # useAuth
+        ├── pages/             # AuthPage, TasksPage
+        ├── services/          # httpClient (Axios + interceptors), authService, taskService
+        ├── types/             # TypeScript interfaces
+        └── utils/             # constants, tokenStorage, navigation
+```
+
+---
+
+## Environment Variables
+
+### Backend (`backend/.env.example`)
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `JWT_SECRET` | Secret for signing access tokens |
+| `JWT_EXPIRY` | Access token TTL (e.g. `15m`) |
+| `JWT_REFRESH_EXPIRY` | Refresh token TTL (e.g. `7d`) |
+| `CSRF_SECRET` | HMAC secret for signing CSRF tokens |
+| `CORS_ORIGIN` | Comma-separated list of allowed frontend origins |
+| `NODE_ENV` | `development` or `production` |
+| `API_PORT` | Port to listen on (default `3000`) |
+
+### Frontend (`frontend/.env.example`)
+
+| Variable | Description |
+|---|---|
+| `VITE_API_URL` | Backend base URL |
