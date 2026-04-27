@@ -1,204 +1,139 @@
-# Task Tracker Frontend
+# Task Tracker – Frontend
 
-A modern, feature-rich React + TypeScript frontend for task management with JWT authentication and automatic token refresh.
+This is the frontend for the Task Tracker app built using React, TypeScript, and Vite.
 
-## ✨ Features
+**Live URL:** https://task-manager-app-wgds-j19lyzpn7-joels-projects-96585023.vercel.app/login
 
-- **Authentication** - Login, registration, JWT tokens, automatic refresh
-- **Task Management** - CRUD operations with filtering and stats
-- **Protected Routes** - Route guards for authenticated users
-- **Auto Token Refresh** - Seamless token refresh without user interaction
-- **Responsive Design** - Mobile-first Tailwind CSS styling
-- **Type Safe** - Full TypeScript implementation
-- **Error Handling** - User-friendly error messages and validation
+---
 
-## 🚀 Quick Start
+## Tech Stack
 
-### Prerequisites
-- Node.js 16+
-- Backend API running on `http://localhost:3000`
+- React 19 + TypeScript
+- Vite
+- React Router v7
+- Axios
+- Tailwind CSS
 
-### Setup
+---
+
+## Local Setup
 
 ```bash
 cd frontend
+cp .env.example .env
+
+# backend URL
+# VITE_API_URL=http://localhost:3000
 
 npm install
-
-# Create .env file (or update existing)
-echo "VITE_API_URL=http://localhost:3000" > .env
-
-# Start development server
 npm run dev
+
+# runs at http://localhost:5173
 ```
 
-Open `http://localhost:5173` in your browser.
+---
 
-## 📚 Architecture
+## Environment Variables
 
-### Key Features
+| Variable | Description |
+|---|---|
+| `VITE_API_URL` | Backend API base URL |
 
-**Automatic Token Refresh:**
-```
-- Request interceptor adds Bearer token to all requests
-- Response interceptor checks for 401 errors
-- Failed requests queued while refreshing
-- New token obtained from /auth/refresh endpoint
-- Failed requests retried with new token
-- Queue processed after successful refresh
-```
+---
 
-**Global Auth State:**
-- React Context API for user, tokens, and auth state
-- Custom `useAuth()` hook for easy access
-- Automatic token persistence in localStorage
-
-**Protected Routes:**
-- `ProtectedRoute` component checks authentication
-- Redirects unauthenticated users to login
-- Shows loading state while checking auth
-
-### Folder Structure
+## Project Structure
 
 ```
 src/
-├── types/              # TypeScript interfaces
-├── services/           # API client with interceptors
-├── contexts/           # Auth context & state
-├── hooks/              # Custom React hooks
-├── components/         # Reusable UI components
-├── pages/              # Page components
-├── utils/              # Helpers & constants
-├── App.tsx             # Main app with routing
-└── main.tsx            # Entry point
+├── components/         # UI components
+│   ├── Header.tsx
+│   ├── TaskItem.tsx
+│   ├── TaskModal.tsx
+│   ├── CreateTaskForm.tsx
+│   ├── AlertDialog.tsx
+│   ├── ConfirmDialog.tsx
+│   ├── LoginForm.tsx
+│   ├── RegisterForm.tsx
+│   ├── ProtectedRoute.tsx
+│   └── PublicRoute.tsx
+├── contexts/
+│   └── AuthContext.tsx     # auth state
+├── hooks/
+│   └── useAuth.ts
+├── pages/
+│   ├── AuthPage.tsx
+│   └── TasksPage.tsx
+├── services/
+│   ├── httpClient.ts       # axios instance + interceptors
+│   ├── authService.ts
+│   ├── taskService.ts
+│   └── apiClient.ts
+├── types/
+│   └── index.ts
+├── utils/
+│   ├── constants.ts
+│   ├── tokenStorage.ts
+│   └── navigation.ts
+├── App.tsx
+└── main.tsx
 ```
 
-## 🔐 Token Management
+---
 
-### How It Works
+## Auth Flow
 
-1. **Login** → Backend returns `accessToken` and `refreshToken`
-2. **Storage** → Both tokens stored in localStorage
-3. **Requests** → Access token added to Authorization header
-4. **Expiry** → If token expires, interceptor catches 401
-5. **Refresh** → New token obtained from /auth/refresh
-6. **Retry** → Original request retried with new token
-
-### Request Flow
+On app startup, the auth context tries to restore the session:
 
 ```
-User Request
-    ↓
-Add Bearer token from localStorage
-    ↓
-Send to Backend API
-    ↓
-Success (2xx) → Return response
-    ↓
-Unauthorized (401) → Refresh token
-    ↓
-Get new token from /auth/refresh
-    ↓
-Retry original request
-    ↓
-Return response
+GET /auth/csrf-token
+  -> backend sets csrf cookie + returns csrf token
+
+POST /auth/refresh
+  -> sent with refresh token cookie + X-CSRF-Token header
+  -> returns new access token + csrf token
+
+-> store accessToken in localStorage
+-> store csrfToken in sessionStorage
+-> user is authenticated
 ```
 
-## 🛠 Key Files
+If refresh fails, the user is redirected to `/login`.
 
-| File | Purpose |
-|------|---------|
-| `services/apiClient.ts` | Axios client with token interceptors |
-| `contexts/AuthContext.tsx` | Global auth state management |
-| `hooks/useAuth.ts` | Hook to access auth context |
-| `components/ProtectedRoute.tsx` | Route guard for auth pages |
-| `pages/AuthPage.tsx` | Login/Register page |
-| `pages/TasksPage.tsx` | Main tasks management page |
-| `types/index.ts` | All TypeScript interfaces |
+---
 
-## 🧪 Testing
+## Token Storage
+
+| Token | Storage | Reason |
+|---|---|---|
+| `accessToken` | `localStorage` | short-lived (15 min) |
+| `refreshToken` | `HttpOnly` cookie | not accessible via JS |
+| `csrfToken` | `sessionStorage` | cleared on tab close |
+
+---
+
+## Axios Flow
+
+- Every request attaches access token + CSRF token
+- If a request returns 401:
+  1. Call `/auth/refresh`
+  2. Store new tokens
+  3. Retry failed requests
+  4. If refresh fails → logout user
+
+---
+
+## Route Protection
+
+- `ProtectedRoute` → blocks `/tasks` if not authenticated
+- `PublicRoute` → blocks `/login` and `/register` if already logged in
+
+---
+
+## Scripts
 
 ```bash
-# Start backend
-cd ../backend && npm run start:dev
-
-# Start frontend (in new terminal)
-npm run dev
-
-# Visit http://localhost:5173
-# Register → Login → Create tasks → Test token refresh
+npm run dev       # start dev server
+npm run build     # production build
+npm run preview   # preview production build
+npm run lint      # lint project
 ```
-
-## 📦 Scripts
-
-```bash
-npm run dev        # Start dev server
-npm run build      # Build for production
-npm run lint       # Run ESLint
-npm run preview    # Preview production build
-```
-
-## ⚙️ Environment Variables
-
-Create `.env` file:
-```env
-VITE_API_URL=http://localhost:3000
-```
-
-## 🎨 Styling
-
-- Tailwind CSS 4.2 for utility-first styling
-- Responsive grid layouts
-- Smooth transitions and animations
-- Accessible form inputs and buttons
-
-## 📋 API Endpoints Used
-
-**Auth:**
-- `POST /auth/register` - Create account
-- `POST /auth/login` - Login user
-- `POST /auth/refresh` - Refresh access token
-
-**Tasks:**
-- `GET /tasks` - List all tasks
-- `POST /tasks` - Create task
-- `PUT /tasks/:id` - Update task
-- `DELETE /tasks/:id` - Delete task
-
-## ✅ Best Practices Implemented
-
-- ✅ Full TypeScript type safety
-- ✅ Organized folder structure by feature
-- ✅ Separation of concerns (services, components, pages)
-- ✅ Reusable component architecture
-- ✅ Custom React hooks
-- ✅ Global state management with Context API
-- ✅ Automatic token refresh with queue management
-- ✅ Protected routes
-- ✅ Error handling and user feedback
-- ✅ Responsive mobile-first design
-- ✅ Loading and error states
-- ✅ Form validation
-
-## 🐛 Troubleshooting
-
-**"Cannot connect to API"**
-- Check backend is running on `http://localhost:3000`
-- Verify `VITE_API_URL` in `.env`
-
-**"Unauthorized" errors**
-- Clear localStorage and login again
-- Check JWT_SECRET matches between frontend and backend
-
-**"Token refresh failing"**
-- Verify refresh endpoint at `POST /auth/refresh`
-- Check response includes `accessToken`
-
-## 📚 Stack
-
-- React 19.2
-- TypeScript 5
-- Vite 5
-- Tailwind CSS 4
-- Axios 1.15
-
