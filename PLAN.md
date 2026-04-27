@@ -13,7 +13,7 @@ I avoided Next.js API routes because I didn't want to mix frontend and backend. 
 ## Architecture Overview
 
 ```
-Next.js (Vercel)         NestJS API (Render/Docker)        PostgreSQL
+React Frontend(Vercel)         NestJS API (Render/Docker)        PostgreSQL
 ─────────────────        ─────────────────────────        ─────────────
 Auth pages        ──►    POST /auth/register              Users table
 Tasks dashboard   ──►    POST /auth/login                 Tasks table
@@ -22,9 +22,9 @@ Axios + CSRF hdr  ──►    POST /auth/logout     ◄── cookies
                   ──►    GET/POST/PUT/DELETE /tasks
 ```
 
-- **Frontend:** Next.js (App Router), Axios with interceptors, React Context for auth state, Tailwind CSS
+- **Frontend:** React 19 with TypeScript, Axios with interceptors, React Context for auth state, Tailwind CSS
 - **Auth:** Short-lived access token (15 mins) + refresh token (7 days) stored in an HttpOnly cookie. CSRF protection uses a double-submit cookie approach.
-- **Database:** PostgreSQL with Prisma (type-safe queries + migrations)
+- **Database:** PostgreSQL (Histed on Neon) with Prisma (type-safe queries + migrations)
 
 ## Security Considerations
 
@@ -44,3 +44,4 @@ Axios + CSRF hdr  ──►    POST /auth/logout     ◄── cookies
 - **Redis** — would replace in-memory rate limiting so it works across multiple app instances
 - **HttpOnly-only auth flow** — removing localStorage entirely would reduce XSS risk further
 - **OAuth (e.g., Google login)** — removes password handling completely and is more secure long-term
+- **zustand** - would use zustand to avoid prop drilling and manage global state in case need to add more features
