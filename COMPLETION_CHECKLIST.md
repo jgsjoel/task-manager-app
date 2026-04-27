@@ -61,7 +61,7 @@
 
 ### Documentation
 - [x] **README.md** - Root project overview (updated with complete status)
-- [x] **[backend/README.md](backend/README.md)** - Backend API documentation
+- [x] **[backend/README.md](backend/API.md)** - Backend API documentation
 - [x] **[task-tracker-frontend/README.md](task-tracker-frontend/README.md)** - Frontend setup guide
 - [x] **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete deployment guide
 - [x] **PLAN.md** - Architecture & security planning (Phase 1 deliverable)
