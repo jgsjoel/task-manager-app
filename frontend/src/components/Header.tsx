@@ -12,10 +12,10 @@ export const Header = () => {
     setIsLogoutConfirmOpen(true);
   };
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     setIsLogoutConfirmOpen(false);
-    logout();
-    navigate('/login');
+    await logout();
+    navigate('/');
   };
 
   return (

@@ -17,9 +17,11 @@ export interface LoginPayload {
   password: string;
 }
 
+// Backend returns { accessToken, csrfToken, user } on login.
+// refreshToken is set as an HttpOnly cookie — never in the JS-accessible response.
 export interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
+  csrfToken: string;
   user: User;
 }
 
@@ -60,6 +62,6 @@ export interface AuthContextType {
   error: string | null;
   login: (credentials: LoginPayload) => Promise<void>;
   register: (credentials: RegisterPayload) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   clearError: () => void;
 }

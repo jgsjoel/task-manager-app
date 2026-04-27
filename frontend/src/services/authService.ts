@@ -10,6 +10,12 @@ export const authService = {
   login: (email: string, password: string) =>
     client.post(API_ENDPOINTS.LOGIN, { email, password }),
 
-  refresh: (refreshToken: string) =>
-    client.post(API_ENDPOINTS.REFRESH, { refreshToken }),
+  // No body — refreshToken HttpOnly cookie is sent automatically by the browser.
+  refresh: () => client.post(API_ENDPOINTS.REFRESH),
+
+  // Fetches a fresh CSRF token on app startup.
+  getCsrfToken: () => client.get(API_ENDPOINTS.CSRF_TOKEN),
+
+  // Requires CSRF header (CsrfMiddleware applies to auth/logout).
+  logout: () => client.post(API_ENDPOINTS.LOGOUT),
 };
