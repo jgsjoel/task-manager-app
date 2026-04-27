@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Task Tracker',
   description: 'Manage your tasks efficiently',
+  icons: { icon: '/favicon.svg' },
 };
 
 export default function RootLayout({

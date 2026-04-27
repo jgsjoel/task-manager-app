@@ -100,10 +100,10 @@ let AuthService = AuthService_1 = class AuthService {
         }
     }
     generateTokens(userId, email) {
-        const accessToken = this.jwtService.sign({ sub: userId, email }, { expiresIn: '15m' });
+        const accessToken = this.jwtService.sign({ sub: userId, email }, { expiresIn: (process.env.JWT_EXPIRY || '15m') });
         const refreshToken = this.jwtService.sign({ sub: userId, email }, {
             secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret-key',
-            expiresIn: '7d',
+            expiresIn: (process.env.JWT_REFRESH_EXPIRY || '7d'),
         });
         return { accessToken, refreshToken };
     }

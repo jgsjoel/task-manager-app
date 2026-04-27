@@ -5,7 +5,9 @@ export const API_ENDPOINTS = {
   REGISTER: '/auth/register',
   LOGIN: '/auth/login',
   REFRESH: '/auth/refresh',
-  
+  LOGOUT: '/auth/logout',
+  CSRF_TOKEN: '/auth/csrf-token',
+
   // Tasks
   TASKS: '/tasks',
   TASK_BY_ID: (id: string) => `/tasks/${id}`,

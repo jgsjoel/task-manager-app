@@ -48,7 +48,7 @@ export const CreateTaskForm = ({ onSubmit, isLoading }: CreateTaskFormProps) => 
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Task title..."
             disabled={isLoading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
             minLength={3}
           />
         </div>
@@ -59,7 +59,7 @@ export const CreateTaskForm = ({ onSubmit, isLoading }: CreateTaskFormProps) => 
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add description (optional)..."
             disabled={isLoading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 resize-none"
+            className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 resize-none"
             rows={2}
           />
         </div>

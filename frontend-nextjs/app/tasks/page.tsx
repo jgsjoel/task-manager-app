@@ -28,7 +28,7 @@ export default function TasksPage() {
       const message = err.response?.data?.message || 'Failed to fetch tasks';
       setError(message);
       if (err.response?.status === 401) {
-        router.push('/auth/login');
+        router.push('/');
       }
     } finally {
       setIsLoading(false);

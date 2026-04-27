@@ -1,6 +1,6 @@
 import axios, { AxiosError, type AxiosInstance } from 'axios';
 import { tokenStorage } from '../utils/tokenStorage';
-import { API_BASE_URL } from '../utils/constants';
+import { API_BASE_URL, API_ENDPOINTS } from '../utils/constants';
 
 class HttpClient {
   private client: AxiosInstance;
@@ -11,27 +11,17 @@ class HttpClient {
   }> = [];
 
   constructor() {
-    // Generate a stable session ID for this client session
-    const generateSessionId = () => 
-      `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    const sessionId = typeof window !== 'undefined' 
-      ? (sessionStorage.getItem('sessionId') || generateSessionId())
-      : generateSessionId();
-    
-    if (typeof window !== 'undefined' && !sessionStorage.getItem('sessionId')) {
-      sessionStorage.setItem('sessionId', sessionId);
-    }
-
     this.client = axios.create({
       baseURL: API_BASE_URL,
+      // Required so the browser sends HttpOnly cookies (refreshToken, csrfSecret)
+      // on cross-origin requests to the backend.
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
-        'X-Session-ID': sessionId,
       },
     });
 
-    // Request interceptor to add token and CSRF token
+    // Request interceptor: attach access token and CSRF token
     this.client.interceptors.request.use(
       (config) => {
         const token = tokenStorage.getAccessToken();
@@ -39,16 +29,14 @@ class HttpClient {
           config.headers.Authorization = `Bearer ${token}`;
         }
 
-        // Add CSRF token for state-changing requests
+        // Add CSRF token header for state-changing requests.
+        // The backend CsrfMiddleware validates it against the csrfSecret HttpOnly cookie.
         if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method?.toUpperCase() || '')) {
-          const csrfToken = typeof window !== 'undefined' 
-            ? sessionStorage.getItem('csrfToken') 
+          const csrfToken = typeof window !== 'undefined'
+            ? sessionStorage.getItem('csrfToken')
             : null;
           if (csrfToken) {
             config.headers['X-CSRF-Token'] = csrfToken;
-            console.log('CSRF token added to request:', csrfToken);
-          } else {
-            console.warn('No CSRF token available for request:', config.url, config.method);
           }
         }
 
@@ -57,18 +45,14 @@ class HttpClient {
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor for token refresh and CSRF token extraction
+    // Response interceptor: persist CSRF token from response body, handle 401
     this.client.interceptors.response.use(
       (response) => {
-        // Extract and store CSRF token from response header (case-insensitive)
-        const csrfToken = 
-          response.headers['x-csrf-token'] || 
-          response.headers['X-CSRF-Token'] ||
-          Object.entries(response.headers).find(([k]) => k.toLowerCase() === 'x-csrf-token')?.[1];
-        
+        // The backend returns a fresh csrfToken in the body of auth responses
+        // (login, refresh, csrf-token). Store it so subsequent requests can use it.
+        const csrfToken = response.data?.csrfToken;
         if (csrfToken && typeof window !== 'undefined') {
           sessionStorage.setItem('csrfToken', csrfToken as string);
-          console.log('CSRF token extracted and stored:', csrfToken);
         }
         return response;
       },
@@ -78,17 +62,20 @@ class HttpClient {
 
   private handleResponseError = async (error: AxiosError) => {
     const originalRequest = error.config as any;
-    const url = originalRequest.url || '';
+    const url = originalRequest?.url || '';
 
-    // Don't try to refresh for auth endpoints
-    if (url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/refresh')) {
+    // Don't retry for auth endpoints to avoid infinite loops
+    if (
+      url.includes('/auth/login') ||
+      url.includes('/auth/register') ||
+      url.includes('/auth/refresh')
+    ) {
       return Promise.reject(error);
     }
 
-    // If 401 and not already tried to refresh
+    // On 401, try a silent token refresh once
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (this.isRefreshing) {
-        // Queue the request while refreshing
         return new Promise((resolve, reject) => {
           this.failedQueue.push({ resolve, reject });
         }).then((token) => {
@@ -101,33 +88,28 @@ class HttpClient {
       this.isRefreshing = true;
 
       try {
-        const refreshToken = tokenStorage.getRefreshToken();
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
+        // The refreshToken HttpOnly cookie is sent automatically by the browser.
+        // The CSRF token header is added by the request interceptor above.
+        const response = await this.client.post(API_ENDPOINTS.REFRESH);
+        const { accessToken, csrfToken } = response.data;
+
+        tokenStorage.setAccessToken(accessToken);
+        if (csrfToken && typeof window !== 'undefined') {
+          sessionStorage.setItem('csrfToken', csrfToken);
         }
 
-        const response = await this.client.post('/auth/refresh', {
-          refreshToken,
-        });
-
-        const { accessToken } = response.data;
-        tokenStorage.setTokens(accessToken, refreshToken);
-
-        // Process queued requests
         this.failedQueue.forEach(({ resolve }) => resolve(accessToken));
         this.failedQueue = [];
 
-        // Retry original request
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return this.client(originalRequest);
       } catch (refreshError: any) {
         this.failedQueue.forEach(({ reject }) => reject(refreshError));
         this.failedQueue = [];
 
-        // Clear tokens and redirect to login
         tokenStorage.clearTokens();
         if (typeof window !== 'undefined') {
-          window.location.href = '/auth/login';
+          window.location.href = '/';
         }
 
         return Promise.reject(refreshError);

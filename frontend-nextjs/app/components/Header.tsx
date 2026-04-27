@@ -14,10 +14,10 @@ export const Header = () => {
     setIsLogoutConfirmOpen(true);
   };
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     setIsLogoutConfirmOpen(false);
-    logout();
-    router.push('/auth/login');
+    await logout();
+    router.push('/');
   };
 
   return (

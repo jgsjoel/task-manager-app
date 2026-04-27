@@ -16,8 +16,8 @@ AuthModule = __decorate([
     Module({
         imports: [
             JwtModule.register({
-                secret: process.env.JWT_SECRET || 'your-secret-key',
-                signOptions: { expiresIn: '15m' },
+                secret: process.env.JWT_SECRET,
+                signOptions: { expiresIn: (process.env.JWT_EXPIRY || '15m') },
             }),
         ],
         providers: [AuthService, CsrfService, PrismaService],
