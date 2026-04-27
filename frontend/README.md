@@ -21,7 +21,7 @@ A modern, feature-rich React + TypeScript frontend for task management with JWT 
 ### Setup
 
 ```bash
-cd task-tracker-frontend
+cd frontend
 
 npm install
 
@@ -202,6 +202,3 @@ VITE_API_URL=http://localhost:3000
 - Tailwind CSS 4
 - Axios 1.15
 
-## 📄 License
-
-UNLICENSED
